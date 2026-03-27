@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Caja - Gestión de Sellos</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            background-color: #121212; color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            text-align: center; margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        h1 { color: #0028FF; margin-bottom: 5px; }
+        
+        /* PANTALLA 1: BÚSQUEDA */
+        #pantallaBusqueda { width: 100%; max-width: 350px; }
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; border: 2px solid #333; background-color: #000; margin-bottom: 20px; }
+        
+        .separador { margin: 20px 0; color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;}
+        
+        .input-manual {
+            display: flex; gap: 10px;
+        }
+        .input-manual input {
+            flex: 1; padding: 15px; border-radius: 8px; border: none; font-size: 16px;
+        }
+        .input-manual button {
+            background-color: #333; color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+
+        /* PANTALLA 2: ACCIONES DEL CLIENTE */
+        #pantallaAcciones {
+            width: 100%; max-width: 350px; background-color: #1e1e1e;
+            padding: 25px 20px; border-radius: 15px; display: none; box-sizing: border-box;
+        }
+        .cliente-nombre { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #fff;}
+        .cliente-tel { color: #888; font-size: 14px; margin-bottom: 20px; font-family: monospace;}
+        
+        .estado-sellos {
+            background-color: #000; padding: 15px; border-radius: 10px; margin-bottom: 25px;
+            font-size: 18px; border: 1px solid #333;
+        }
+        .estado-sellos span { color: #0028FF; font-weight: bold; font-size: 24px; }
+
+        /* Botones de acción */
+        .btn {
+            width: 100%; padding: 18px; border-radius: 25px; border: none; font-size: 16px;
+            font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-sumar { background-color: #0028FF; color: white; }
+        .btn-canjear { background-color: #FFD700; color: #000; display: none; } /* Oculto por defecto */
+        .btn-restar { background-color: transparent; border: 1px solid #555; color: #aaa; padding: 12px; margin-top: 10px; }
+        .btn-volver { background: none; color: #ff5252; text-decoration: underline; margin-top: 15px; }
+
+        #mensajeLoader { margin-top: 20px; color: #FFD700; display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Caja ☕</h1>
+
+    <div id="mensajeLoader">Buscando cliente...</div>
+
+    <div id="pantallaBusqueda">
+        <p style="color: #888; margin-bottom: 15px;">Escanea el QR del cliente</p>
+        <div id="reader"></div>
+        
+        <div class="separador">o ingresa el número</div>
+        
+        <div class="input-manual">
+            <input type="tel" id="inputTelBusqueda" placeholder="Ej: 2215551234">
+            <button onclick="buscarPorBoton()">Buscar</button>
+        </div>
+    </div>
+
+    <div id="pantallaAcciones">
+        <div class="cliente-nombre" id="uiNombre">Nombre...</div>
+        <div class="cliente-tel" id="uiTel">Teléfono...</div>
+
+        <div class="estado-sellos">
+            Sellos actuales: <br>
+            <span id="uiSellos">0</span> / 10
+        </div>
+
+        <button id="btnSumar" class="btn btn-sumar" onclick="modificarSellos(1)">+ Sumar 1 Sello</button>
+        <button id="btnCanjear" class="btn btn-canjear" onclick="canjearPremio()">🎁 Entregar Premio y Reiniciar</button>
+        
+        <button class="btn btn-restar" onclick="modificarSellos(-1)">Deshacer (-1)</button>
+        <button class="btn btn-volver" onclick="volverABuscar()">Cerrar / Siguiente Cliente</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaqJraAXeZ8F4zCd9GUIdNIHhfU7FMzJk",
+            authDomain: "club-cafe-app.firebaseapp.com",
+            databaseURL: "https://club-cafe-app-default-rtdb.firebaseio.com",
+            projectId: "club-cafe-app",
+            storageBucket: "club-cafe-app.firebasestorage.app",
+            messagingSenderId: "1007849307452",
+            appId: "1:1007849307452:web:2472f6b2cab7deeae53239",
+            measurementId: "G-6314S7TS0T"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let html5QrcodeScanner;
+        let clienteActualId = null; // Para saber a quién le estamos modificando los datos
+        let puntosActuales = 0;
+
+        const uiBusqueda = document.getElementById('pantallaBusqueda');
+        const uiAcciones = document.getElementById('pantallaAcciones');
+        const uiLoader = document.getElementById('mensajeLoader');
+
+        // 1. INICIAR CÁMARA
+        function iniciarCamara() {
+            if(!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                html5QrcodeScanner.render(onScanSuccess, () => {});
+            } else {
+                html5QrcodeScanner.resume();
+            }
+        }
+
+        // 2. AL LEER QR O TOCAR "BUSCAR"
+        window.onScanSuccess = function(decodedText) {
+            html5QrcodeScanner.pause();
+            buscarClienteEnFirebase(decodedText);
+        }
+
+        window.buscarPorBoton = function() {
+            let tel = document.getElementById('inputTelBusqueda').value.replace(/\D/g,'');
+            if(tel.length < 8) return alert("Ingrese un número válido");
+            if(html5QrcodeScanner) html5QrcodeScanner.pause();
+            buscarClienteEnFirebase(tel);
+        }
+
+        // 3. BUSCAR EN LA BASE DE DATOS
+        async function buscarClienteEnFirebase(telefono) {
+            uiBusqueda.style.display = 'none';
+            uiLoader.style.display = 'block';
+
+            try {
+                const docRef = doc(db, "clientes", telefono);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const datos = docSnap.data();
+                    clienteActualId = telefono;
+                    puntosActuales = datos.puntos;
+                    
+                    // Llenar la ficha
+                    document.getElementById('uiNombre').innerText = datos.nombre;
+                    document.getElementById('uiTel').innerText = telefono;
+                    document.getElementById('uiSellos').innerText = puntosActuales;
+
+                    // Mostrar u ocultar botones según los puntos
+                    if(puntosActuales >= 10) {
+                        document.getElementById('btnSumar').style.display = 'none';
+                        document.getElementById('btnCanjear').style.display = 'block';
+                    } else {
+                        document.getElementById('btnSumar').style.display = 'block';
+                        document.getElementById('btnCanjear').style.display = 'none';
+                    }
+
+                    uiLoader.style.display = 'none';
+                    uiAcciones.style.display = 'block';
+                } else {
+                    alert("No se encontró ningún cliente con ese número.");
+                    volverABuscar();
+                }
+            } catch (error) {
+                alert("Error de conexión");
+                volverABuscar();
+            }
+        }
+
+        // 4. SUMAR O RESTAR SELLOS
+        window.modificarSellos = async function(cantidad) {
+            // Evitar que queden puntos negativos si tocan restar en 0
+            if(cantidad === -1 && puntosActuales <= 0) return;
+
+            // Evitar sumar si ya tiene 10 (tienen que canjear)
+            if(cantidad === 1 && puntosActuales >= 10) return alert("Debe canjear el premio primero");
+
+            const btnOriginal = document.getElementById('btnSumar').innerText;
+            document.getElementById('btnSumar').innerText = "Procesando...";
+
+            try {
+                const docRef = doc(db, "clientes", clienteActualId);
+                await updateDoc(docRef, { puntos: increment(cantidad) });
+                
+                // Actualizar la pantalla localmente sin recargar de la base
+                puntosActuales += cantidad;
+                document.getElementById('uiSellos').innerText = puntosActuales;
+                
+                // Si llegó a 10 con esta suma, cambiar los botones
+                if(puntosActuales >= 10) {
+                    document.getElementById('btnSumar').style.display = 'none';
+                    document.getElementById('btnCanjear').style.display = 'block';
+                }
+                document.getElementById('btnSumar').innerText = btnOriginal;
+
+            } catch(e) {
+                alert("Hubo un error al guardar");
+                document.getElementById('btnSumar').innerText = btnOriginal;
+            }
+        }
+
+        // 5. CANJEAR EL PREMIO Y REINICIAR A CERO
+        window.canjearPremio = async function() {
+            if(confirm("¿Confirmas que le entregaste la bebida de regalo al cliente? La tarjeta volverá a 0.")) {
+                try {
+                    const docRef = doc(db, "clientes", clienteActualId);
+                    await updateDoc(docRef, { puntos: 0 }); // Reinicio a cero
+                    alert("¡Premio entregado! Tarjeta reiniciada.");
+                    volverABuscar(); // Volvemos a la pantalla principal para el próximo cliente
+                } catch(e) {
+                    alert("Error al canjear premio.");
+                }
+            }
+        }
+
+        // 6. VOLVER A EMPEZAR
+        window.volverABuscar = function() {
+            uiAcciones.style.display = 'none';
+            uiLoader.style.display = 'none';
+            uiBusqueda.style.display = 'block';
+            document.getElementById('inputTelBusqueda').value = "";
+            clienteActualId = null;
+            if(html5QrcodeScanner) html5QrcodeScanner.resume();
+        }
+
+        iniciarCamara();
+    </script>
+</body>
+</html>

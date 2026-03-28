@@ -2,69 +2,73 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Club Café</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Panel - Club Café Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-warm: #FAF5F0; --card-white: #ffffff;
-            --brand-marine: #1A4D7C; --text-main: #2C3E50;
-            --text-secondary: #7F8C8D; --border-warm: #E0D7D0;
+            --brand-marine: #1A4D7C; --brand-marine-gradient: linear-gradient(135deg, #1A4D7C 0%, #0D3153 100%);
+            --text-main: #2C3E50; --text-secondary: #7F8C8D;
+            --border-warm: #E0D7D0;
         }
 
         body {
             background-color: var(--bg-warm); color: var(--text-main);
-            font-family: 'Poppins', sans-serif; margin: 0; padding: 20px;
+            font-family: 'Poppins', sans-serif; margin: 0; padding: 15px;
             display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; -webkit-font-smoothing: antialiased;
         }
 
-        .main-container { width: 100%; max-width: 900px; }
-        h1 { color: var(--brand-marine); margin-bottom: 5px; }
+        .main-container { width: 100%; max-width: 900px; padding-top: 10px; }
+        h1 { color: var(--brand-marine); margin: 0 0 5px 0; font-size: 22px; font-weight: 700;}
         
-        /* LOGIN */
+        /* LOGIN DUEÑO */
         #pantallaLogin {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-warm); z-index: 2000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .pin-input {
-            padding: 15px; border-radius: 12px; border: 2px solid var(--border-warm); font-size: 24px;
-            text-align: center; width: 150px; margin-bottom: 20px; letter-spacing: 5px;
+            padding: 18px; border-radius: 14px; border: 2px solid var(--border-warm); font-size: 32px;
+            text-align: center; width: 100%; max-width: 200px; margin-bottom: 25px; letter-spacing: 10px;
+            font-weight: bold; color: var(--brand-marine); font-family: monospace;
+            transition: all 0.3s;
         }
+        .pin-input:focus { border-color: var(--brand-marine); outline: none; box-shadow: 0 0 10px rgba(26,77,124,0.1); }
         .btn {
-            background-color: var(--brand-marine); color: white; border: none; padding: 12px 25px;
-            border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            background: var(--brand-marine-gradient); color: white; border: none; padding: 16px 30px;
+            border-radius: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 16px;
         }
         .btn:active { transform: scale(0.95); }
-        .btn-excel { background-color: #27AE60; }
 
         #pantallaDashboard { display: none; width: 100%; }
         
-        /* TARJETAS SUPERIORES */
+        /* TARJETAS SUPERIORES (Optimized layout) */
         .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px; margin-bottom: 20px; margin-top: 20px;
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 10px; margin: 20px 0;
         }
         .stat-card {
-            background: var(--card-white); padding: 20px; border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;
-            border: 1px solid var(--border-warm);
+            background: var(--card-white); padding: 15px; border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); text-align: center;
+            border: 1px solid var(--border-warm); display: flex; flex-direction: column; justify-content: center;
         }
-        .stat-value { font-size: 32px; font-weight: 700; color: var(--brand-marine); line-height: 1; }
-        .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-top: 5px; font-weight: 600;}
+        .stat-value { font-size: 32px; font-weight: 700; color: var(--brand-marine); line-height: 1; margin-bottom: 2px;}
+        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; opacity: 0.8;}
 
-        /* GRÁFICO Y TABLA (Layout) */
+        /* --- LAYOUT GRÁFICO Y TABLA --- */
         .dashboard-content {
             display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px;
         }
         @media (min-width: 768px) {
-            .dashboard-content { grid-template-columns: 1fr 1fr; } /* Mitad y mitad en PC */
+            .dashboard-content { grid-template-columns: 2fr 1.5fr; } /* Proporción en PC */
         }
 
         .panel-box {
-            background: var(--card-white); border-radius: 16px; padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-warm);
+            background: var(--card-white); border-radius: 20px; padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(224, 215, 208, 0.5);
         }
         .panel-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -72,15 +76,29 @@
         }
         .panel-title { font-weight: 700; font-size: 16px; color: var(--brand-marine); }
 
-        /* TABLA LIMITADA */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border-warm); }
-        th { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; }
+        /* MAGIA 3: GRÁFICO CONTENIDO Y PEQUEÑO (Aspect Ratio) */
+        .grafico-wrapper {
+            max-width: 100%; height: auto; margin-bottom: 10px;
+            aspect-ratio: 2/1; /* 2:1 ratio (Ancho x 0.5 Alto), contenido y prolijo */
+            position: relative;
+        }
+        #graficoEstadisticas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
+
+        /* TABLA LIMITADA Y CARGAR MÁS */
+        .table-container { overflow-x: auto; margin-bottom: 15px;}
+        table { width: 100%; border-collapse: collapse; text-align: left; table-layout: fixed;}
+        th, td { padding: 12px 8px; border-bottom: 1px solid var(--border-warm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        th { color: var(--text-secondary); font-size: 10px; text-transform: uppercase; }
         td { font-size: 13px; }
         tr:last-child td { border-bottom: none; }
         
-        .badge { background: #E6C200; color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+        .badge { background: #FFD700; color: #000; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+        .btn-outlined { background-color: transparent; border: 1.5px solid var(--border-warm); color: var(--text-secondary); padding: 12px 20px; font-size: 14px; width: 100%; border-radius: 12px; font-weight: 500;}
+        
+        #btnExcelCompleto { background: #27AE60; margin-bottom: 15px; width: 100%; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 18px 25px; border-radius: 18px;}
+        #btnExcelCompleto:active { background-color: #219150; }
+        .spinner { width: 15px; height: 15px; border: 2px solid #fff; border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #mensajeLoader { text-align: center; margin-top: 50px; font-weight: 600; color: var(--brand-marine); }
     </style>
@@ -88,49 +106,57 @@
 <body>
 
     <div id="pantallaLogin">
-        <h2 style="color: var(--brand-marine);">Acceso Dueño</h2>
-        <input type="password" id="inputPin" class="pin-input" placeholder="****" maxlength="4">
-        <button class="btn" onclick="verificarPinAdmin()">Entrar</button>
+        <h2 style="color: var(--brand-marine); margin-bottom: 10px; font-weight: 700;">Acceso Dueño</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 30px; font-size: 14px;">Ingresa el PIN de administrador</p>
+        <input type="password" id="inputPin" class="pin-input" placeholder="****" maxlength="4" inputmode="numeric">
+        <button id="btnDesbloquear" class="btn" style="width: 200px;">Desbloquear</button>
         <p id="errorPin" style="color: #E74C3C; display: none; margin-top: 15px; font-size: 13px;">PIN incorrecto</p>
     </div>
 
     <div class="main-container">
         <div id="pantallaDashboard">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; padding: 0 5px;">
                 <div>
-                    <h1>Panel de Control 📊</h1>
-                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">Vista de la Caja</p>
+                    <h1>Panel Dueño 📊</h1>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">Administración Central - CAFE CLUB</p>
                 </div>
-                <button class="btn btn-excel" onclick="descargarExcel()">⬇️ Excel Completo</button>
+                <button id="btnExcelCompleto" class="btn btn-excel">
+                    ⬇️ Descargar Excel Completo
+                    <div class="spinner"></div>
+                </button>
             </div>
 
-            <div id="mensajeLoader">Cargando base de datos...</div>
+            <div id="mensajeLoader">Sincronizando base...</div>
 
             <div id="contenidoDatos" style="display: none;">
                 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value" id="uiTotalClientes">0</div>
-                        <div class="stat-label">Clientes Históricos</div>
+                        <div class="stat-label">Clientes Registrados</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="uiTotalSellos">0</div>
-                        <div class="stat-label">Sellos Flotantes</div>
+                        <div class="stat-value" id="uiTotalTazasServidas">0</div>
+                        <div class="stat-label">Sellos Totales Flotantes</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" style="color: #E6C200;" id="uiPremiosListos">0</div>
-                        <div class="stat-label">Premios por Reclamar</div>
+                        <div class="stat-value" style="color: #FFD700;" id="uiTazasPorCanjear">0</div>
+                        <div class="stat-label">Tazas x Reclamar</div>
                     </div>
                 </div>
 
                 <div class="dashboard-content">
+                    
                     <div class="panel-box">
                         <div class="panel-header">
-                            <span class="panel-title">Evolución Mensual</span>
+                            <span class="panel-title">Estado de Tarjetas</span>
                         </div>
-                        <canvas id="graficoMensual" style="width: 100%; height: 250px;"></canvas>
+                        <div class="grafico-wrapper">
+                            <canvas id="graficoEstadisticas"></canvas>
+                        </div>
                         <p style="font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 10px;">
-                            *Nota: El gráfico mostrará datos reales cuando agreguemos las fechas en la app del Barista.
+                            *Nota: El gráfico histórico mensual se activará cuando los clientes se unan con la fecha en Firebase.
                         </p>
                     </div>
 
@@ -143,16 +169,17 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Teléfono</th>
-                                        <th>Nombre</th>
-                                        <th>Sellos</th>
-                                        <th>Premio</th>
+                                        <th style="width: 35%;">Teléfono</th>
+                                        <th style="width: 35%;">Nombre</th>
+                                        <th style="width: 15%;">Tazas</th>
+                                        <th style="width: 15%;">Regalo</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaClientes">
                                     </tbody>
                             </table>
                         </div>
+                        <button id="btnCargarMas" class="btn-outlined">Cargar más en la web...</button>
                     </div>
                 </div>
 
@@ -162,7 +189,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // Importamos 'count' para las estadísticas rápidas
+        import { getFirestore, collection, getDocs, query, limit, orderBy, startAfter } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCaqJraAXeZ8F4zCd9GUIdNIHhfU7FMzJk",
@@ -178,120 +206,217 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const pinAdmin = "7777"; 
-        let clientesData = []; 
+        let grafico = null;
 
+        // Estado de Paginación para la tabla
+        let lastVisibleDoc = null; 
+        let totalClientesGlobal = 0;
+        const PAGE_SIZE = 15;
+
+        // --- SEGURIDAD Dueño ---
         if (sessionStorage.getItem('adminAutorizado') === 'true') {
             document.getElementById('pantallaLogin').style.display = 'none';
             document.getElementById('pantallaDashboard').style.display = 'block';
-            cargarDatos();
+            cargarEstadisticasGlobales();
         }
 
-        window.verificarPinAdmin = function() {
+        document.getElementById('btnDesbloquear').addEventListener('click', verificarPinAdmin);
+        document.getElementById('inputPin').addEventListener('keypress', (e) => { if(e.key === 'Enter') verificarPinAdmin(); });
+
+        function verificarPinAdmin() {
             if (document.getElementById('inputPin').value === pinAdmin) {
                 sessionStorage.setItem('adminAutorizado', 'true');
                 document.getElementById('pantallaLogin').style.display = 'none';
                 document.getElementById('pantallaDashboard').style.display = 'block';
-                cargarDatos();
+                cargarEstadisticasGlobales();
             } else {
                 document.getElementById('errorPin').style.display = 'block';
+                document.getElementById('inputPin').value = '';
             }
         }
 
-        async function cargarDatos() {
+        // --- CARGAR ESTADÍSTICAS RÁPIDAS (CONTEO) ---
+        async function cargarEstadisticasGlobales() {
             try {
-                const querySnapshot = await getDocs(collection(db, "clientes"));
-                
-                let totalClientes = 0;
-                let totalSellos = 0;
-                let premiosListos = 0;
-                clientesData = [];
-
-                querySnapshot.forEach((doc) => {
-                    const datos = doc.data();
-                    const puntos = datos.puntos || 0;
-                    totalClientes++;
-                    totalSellos += puntos;
-                    if(puntos >= 10) premiosListos++;
-
-                    clientesData.push({ telefono: doc.id, nombre: datos.nombre, puntos: puntos });
-                });
+                const totalClientes = await count(collection(db, "clientes"));
+                totalClientesGlobal = totalClientes;
 
                 document.getElementById('uiTotalClientes').innerText = totalClientes;
-                document.getElementById('uiTotalSellos').innerText = totalSellos;
-                document.getElementById('uiPremiosListos').innerText = premiosListos;
-
-                // MAGIA 1: Mostrar SOLO los primeros 15 en la web
-                const tbody = document.getElementById('tablaClientes');
-                tbody.innerHTML = '';
-                const clientesVistaRapida = clientesData.slice(0, 15); // Cortamos la lista
                 
-                clientesVistaRapida.forEach(c => {
+                // NOTA TÉCNICA: Calcular 'Tazas Servidas Totales' y 'Premios x Canjear' 
+                // para la colección entera sin traer los docs requiere funciones de backend 
+                // o un documento de resumen. Para no saturar, los pondremos en 0 o haremos 
+                // la estimación solo para la página cargada en el gráfico.
+                
+                // Empezamos a cargar la primera página de la tabla
+                cargarPaginaDatos(null);
+
+            } catch (error) {
+                console.error("Error cargando estadísticas rápidas:", error);
+                document.getElementById('mensajeLoader').innerText = "Hubo un error al sincronizar.";
+            }
+        }
+
+        // --- MAGIA 1: CARGAR PÁGINAS DE DATOS (NO TODOS) ---
+        async function cargarPaginaDatos(startDoc) {
+            document.getElementById('btnCargarMas').disabled = true;
+            document.getElementById('btnCargarMas').innerText = "Cargando página...";
+
+            try {
+                // Ordenamos por número (id) para consistencia y paginamos 15
+                let baseQuery = query(collection(db, "clientes"), orderBy(firebase.firestore.FieldPath.documentId()));
+                if (startDoc) baseQuery = query(baseQuery, startAfter(startDoc));
+                baseQuery = query(baseQuery, limit(PAGE_SIZE));
+
+                const querySnapshot = await getDocs(baseQuery);
+                
+                const tbody = document.getElementById('tablaClientes');
+                
+                let puntosEnProceso = 0;
+                let premiosListos = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const datos = docSnap.data();
+                    const telefono = docSnap.id;
+                    const puntos = datos.puntos || 0;
+                    
+                    if(puntos >= 10) premiosListos++;
+                    else puntosEnProceso++;
+
+                    // Dibujar fila en la tabla
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="font-family: monospace; color: var(--text-secondary);">${c.telefono}</td>
-                        <td style="font-weight: 600;">${c.nombre}</td>
-                        <td style="font-weight: bold; color: var(--brand-marine);">${c.puntos}</td>
-                        <td>${c.puntos >= 10 ? '<span class="badge">Listo</span>' : '-'}</td>
+                        <td style="font-family: monospace; color: var(--text-secondary);">${telefono}</td>
+                        <td style="font-weight: 600;">${datos.nombre}</td>
+                        <td style="font-weight: bold; color: var(--brand-marine);">${puntos}</td>
+                        <td>${puntos >= 10 ? '<span class="badge">🎁 Listo</span>' : '-'}</td>
                     `;
                     tbody.appendChild(tr);
                 });
 
+                // Actualizar último documento visible para la próxima página
+                lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+                // Si no hay más documentos, ocultar el botón
+                if(querySnapshot.docs.length < PAGE_SIZE) {
+                    document.getElementById('btnCargarMas').style.display = 'none';
+                } else {
+                    document.getElementById('btnCargarMas').disabled = false;
+                    document.getElementById('btnCargarMas').innerText = "Cargar más en la web...";
+                }
+
                 document.getElementById('mensajeLoader').style.display = 'none';
                 document.getElementById('contenidoDatos').style.display = 'block';
 
-                // MAGIA 2: Iniciar el Gráfico
-                iniciarGrafico(totalClientes);
+                // Si es la primera página, inicializamos el gráfico con una estimación rápida
+                if(!startDoc) {
+                    // Actualizamos las otras 2 tarjetas superiores con los datos de esta página como estimación
+                    document.getElementById('uiTotalTazasServidas').innerText = `+${puntosEnProceso + premiosListos * 10}`;
+                    document.getElementById('uiTazasPorCanjear').innerText = premiosListos;
+                    iniciarGrafico(puntosEnProceso, premiosListos);
+                }
 
             } catch (error) {
-                console.error("Error", error);
-                document.getElementById('mensajeLoader').innerText = "Error cargando la base.";
+                console.error("Error cargando página de datos: ", error);
+                document.getElementById('mensajeLoader').innerText = "Hubo un error al cargar la base de datos.";
             }
         }
 
-        function iniciarGrafico(totalRegistrados) {
-            const ctx = document.getElementById('graficoMensual').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
+        document.getElementById('btnCargarMas').addEventListener('click', () => cargarPaginaDatos(lastVisibleDoc));
+
+        // --- MAGIA 3: GRÁFICO PEQUEÑO Y CONTENIDO ---
+        function iniciarGrafico(puntosEnProceso, premiosListos) {
+            const ctx = document.getElementById('graficoEstadisticas').getContext('2d');
+            
+            grafico = new Chart(ctx, {
+                type: 'bar', // Barra es más contenido que línea
                 data: {
-                    labels: ['Enero', 'Febrero', 'Marzo (Actual)'],
+                    labels: ['Últimos Clientes Cargados'],
                     datasets: [
                         {
-                            label: 'Nuevos Clientes',
-                            data: [0, 0, totalRegistrados], // Temporalmente ponemos el total acá
-                            backgroundColor: '#1A4D7C',
-                            borderRadius: 6
+                            label: 'Tarjetas en Proceso',
+                            data: [puntosEnProceso],
+                            backgroundColor: 'rgba(26, 77, 124, 0.8)', // Azul Marino vibrante
+                            borderRadius: 6, barThickness: 40,
                         },
                         {
-                            label: 'Cafés Canjeados',
-                            data: [0, 0, 0], // Aún no tenemos fechas de canje
-                            backgroundColor: '#E6C200',
-                            borderRadius: 6
+                            label: 'Tarjetas Premiadas 🎁',
+                            data: [premiosListos],
+                            backgroundColor: 'rgba(230, 194, 0, 1)', // Oro
+                            borderRadius: 6, barThickness: 40,
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } }
+                    maintainAspectRatio: true, // PROPORCIÓN FIJA (Aspect Ratio)
+                    aspectRatio: 2, // 2:1 ratio (Ancho x 0.5 Alto), contenido y prolijo
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { font: { size: 10, family: 'Poppins' }, color: 'rgba(0,0,0,0.5)' } },
+                        x: { display: false } // Ocultamos el eje x porque es solo una barra de distribución
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', align: 'center', labels: { font: { size: 10, family: 'Poppins' }, padding: 15 } }
+                    },
+                    layout: { padding: 10 }
                 }
             });
         }
 
-        window.descargarExcel = function() {
-            if(clientesData.length === 0) return;
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += "Telefono,Nombre,Sellos Acumulados\r\n";
-            // Acá sí exporta TODOS, no solo los 15
-            clientesData.forEach(cliente => {
-                csvContent += `"${cliente.telefono}","${cliente.nombre}",${cliente.puntos}\r\n`;
-            });
-            var encodedUri = encodeURI(csvContent);
-            var link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "Total_Clientes_ClubCafe.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        // --- BOTÓN MÁGICO EXCEL COMPLETO (ON-DEMAND) ---
+        document.getElementById('btnExcelCompleto').addEventListener('click', descargarExcelCompleto);
+
+        async function descargarExcelCompleto() {
+            const btn = document.getElementById('btnExcelCompleto');
+            const spinner = btn.querySelector('.spinner');
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            btn.innerHTML = `⬇️ Generando Excel Completo... <div class="spinner"></div>`;
+
+            try {
+                // TRAEMOS TODOS LOS DATOS SOLO AL TOCAR EL BOTÓN
+                const querySnapshot = await getDocs(collection(db, "clientes"));
+                let totalClientesCompleto = [];
+                
+                querySnapshot.forEach(function(doc) {
+                    const datos = doc.data();
+                    const telefono = doc.id;
+                    const puntos = datos.puntos || 0;
+                    totalClientesCompleto.push({ telefono, nombre: datos.nombre, puntos });
+                });
+
+                if(totalClientesCompleto.length === 0) return alert("No hay datos.");
+
+                // Armamos el CSV (UTF-8)
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // \uFEFF arregla tildes en Excel
+                csvContent += "Telefono,Nombre,Tazas Acumuladas\r\n"; // Columnas
+
+                totalClientesCompleto.forEach(function(c) {
+                    let row = `"${c.telefono}","${c.nombre}",${c.puntos}`;
+                    csvContent += row + "\r\n";
+                });
+
+                // Descarga automática
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "Total_Clientes_CAFECLUB.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Restauramos el botón
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btn.innerHTML = `⬇️ Descargar Excel Completo <div class="spinner"></div>`;
+
+            } catch(e) {
+                alert("Hubo un error al exportar la base de datos completa.");
+                // Restauramos el botón
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btn.innerHTML = `⬇️ Descargar Excel Completo <div class="spinner"></div>`;
+            }
         }
     </script>
 </body>

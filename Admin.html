@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel - Club Café Pro</title>
+    <link rel="manifest" href="manifest-admin.json">
+    <meta name="theme-color" content="#1A4D7C">
+    <link rel="apple-touch-icon" href="icon.png">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -188,9 +196,9 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // Importamos 'count' para las estadísticas rápidas
-        import { getFirestore, collection, getDocs, query, limit, orderBy, startAfter } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        // ACÁ ESTÁ EL ARREGLO: Agregamos getCountFromServer y documentId
+        import { getFirestore, collection, getDocs, query, limit, orderBy, startAfter, getCountFromServer, documentId } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCaqJraAXeZ8F4zCd9GUIdNIHhfU7FMzJk",
@@ -208,12 +216,10 @@
         const pinAdmin = "7777"; 
         let grafico = null;
 
-        // Estado de Paginación para la tabla
         let lastVisibleDoc = null; 
         let totalClientesGlobal = 0;
         const PAGE_SIZE = 15;
 
-        // --- SEGURIDAD Dueño ---
         if (sessionStorage.getItem('adminAutorizado') === 'true') {
             document.getElementById('pantallaLogin').style.display = 'none';
             document.getElementById('pantallaDashboard').style.display = 'block';
@@ -235,20 +241,14 @@
             }
         }
 
-        // --- CARGAR ESTADÍSTICAS RÁPIDAS (CONTEO) ---
         async function cargarEstadisticasGlobales() {
             try {
-                const totalClientes = await count(collection(db, "clientes"));
+                // ARREGLO 2: La forma correcta de contar en Firebase 9+
+                const snapshot = await getCountFromServer(collection(db, "clientes"));
+                const totalClientes = snapshot.data().count;
                 totalClientesGlobal = totalClientes;
 
                 document.getElementById('uiTotalClientes').innerText = totalClientes;
-                
-                // NOTA TÉCNICA: Calcular 'Tazas Servidas Totales' y 'Premios x Canjear' 
-                // para la colección entera sin traer los docs requiere funciones de backend 
-                // o un documento de resumen. Para no saturar, los pondremos en 0 o haremos 
-                // la estimación solo para la página cargada en el gráfico.
-                
-                // Empezamos a cargar la primera página de la tabla
                 cargarPaginaDatos(null);
 
             } catch (error) {
@@ -257,19 +257,17 @@
             }
         }
 
-        // --- MAGIA 1: CARGAR PÁGINAS DE DATOS (NO TODOS) ---
         async function cargarPaginaDatos(startDoc) {
             document.getElementById('btnCargarMas').disabled = true;
             document.getElementById('btnCargarMas').innerText = "Cargando página...";
 
             try {
-                // Ordenamos por número (id) para consistencia y paginamos 15
-                let baseQuery = query(collection(db, "clientes"), orderBy(firebase.firestore.FieldPath.documentId()));
+                // ARREGLO 3: La forma correcta de ordenar por ID
+                let baseQuery = query(collection(db, "clientes"), orderBy(documentId()));
                 if (startDoc) baseQuery = query(baseQuery, startAfter(startDoc));
                 baseQuery = query(baseQuery, limit(PAGE_SIZE));
 
                 const querySnapshot = await getDocs(baseQuery);
-                
                 const tbody = document.getElementById('tablaClientes');
                 
                 let puntosEnProceso = 0;
@@ -283,7 +281,6 @@
                     if(puntos >= 10) premiosListos++;
                     else puntosEnProceso++;
 
-                    // Dibujar fila en la tabla
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td style="font-family: monospace; color: var(--text-secondary);">${telefono}</td>
@@ -294,10 +291,8 @@
                     tbody.appendChild(tr);
                 });
 
-                // Actualizar último documento visible para la próxima página
                 lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
 
-                // Si no hay más documentos, ocultar el botón
                 if(querySnapshot.docs.length < PAGE_SIZE) {
                     document.getElementById('btnCargarMas').style.display = 'none';
                 } else {
@@ -308,9 +303,7 @@
                 document.getElementById('mensajeLoader').style.display = 'none';
                 document.getElementById('contenidoDatos').style.display = 'block';
 
-                // Si es la primera página, inicializamos el gráfico con una estimación rápida
                 if(!startDoc) {
-                    // Actualizamos las otras 2 tarjetas superiores con los datos de esta página como estimación
                     document.getElementById('uiTotalTazasServidas').innerText = `+${puntosEnProceso + premiosListos * 10}`;
                     document.getElementById('uiTazasPorCanjear').innerText = premiosListos;
                     iniciarGrafico(puntosEnProceso, premiosListos);
@@ -324,46 +317,41 @@
 
         document.getElementById('btnCargarMas').addEventListener('click', () => cargarPaginaDatos(lastVisibleDoc));
 
-        // --- MAGIA 3: GRÁFICO PEQUEÑO Y CONTENIDO ---
         function iniciarGrafico(puntosEnProceso, premiosListos) {
             const ctx = document.getElementById('graficoEstadisticas').getContext('2d');
-            
             grafico = new Chart(ctx, {
-                type: 'bar', // Barra es más contenido que línea
+                type: 'bar',
                 data: {
                     labels: ['Últimos Clientes Cargados'],
                     datasets: [
                         {
                             label: 'Tarjetas en Proceso',
                             data: [puntosEnProceso],
-                            backgroundColor: 'rgba(26, 77, 124, 0.8)', // Azul Marino vibrante
+                            backgroundColor: 'rgba(26, 77, 124, 0.8)',
                             borderRadius: 6, barThickness: 40,
                         },
                         {
                             label: 'Tarjetas Premiadas 🎁',
                             data: [premiosListos],
-                            backgroundColor: 'rgba(230, 194, 0, 1)', // Oro
+                            backgroundColor: 'rgba(230, 194, 0, 1)',
                             borderRadius: 6, barThickness: 40,
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true, // PROPORCIÓN FIJA (Aspect Ratio)
-                    aspectRatio: 2, // 2:1 ratio (Ancho x 0.5 Alto), contenido y prolijo
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.03)' }, ticks: { font: { size: 10, family: 'Poppins' }, color: 'rgba(0,0,0,0.5)' } },
-                        x: { display: false } // Ocultamos el eje x porque es solo una barra de distribución
+                        x: { display: false }
                     },
-                    plugins: {
-                        legend: { position: 'bottom', align: 'center', labels: { font: { size: 10, family: 'Poppins' }, padding: 15 } }
-                    },
+                    plugins: { legend: { position: 'bottom', align: 'center', labels: { font: { size: 10, family: 'Poppins' }, padding: 15 } } },
                     layout: { padding: 10 }
                 }
             });
         }
 
-        // --- BOTÓN MÁGICO EXCEL COMPLETO (ON-DEMAND) ---
         document.getElementById('btnExcelCompleto').addEventListener('click', descargarExcelCompleto);
 
         async function descargarExcelCompleto() {
@@ -374,7 +362,6 @@
             btn.innerHTML = `⬇️ Generando Excel Completo... <div class="spinner"></div>`;
 
             try {
-                // TRAEMOS TODOS LOS DATOS SOLO AL TOCAR EL BOTÓN
                 const querySnapshot = await getDocs(collection(db, "clientes"));
                 let totalClientesCompleto = [];
                 
@@ -387,16 +374,14 @@
 
                 if(totalClientesCompleto.length === 0) return alert("No hay datos.");
 
-                // Armamos el CSV (UTF-8)
-                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // \uFEFF arregla tildes en Excel
-                csvContent += "Telefono,Nombre,Tazas Acumuladas\r\n"; // Columnas
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                csvContent += "Telefono,Nombre,Tazas Acumuladas\r\n";
 
                 totalClientesCompleto.forEach(function(c) {
                     let row = `"${c.telefono}","${c.nombre}",${c.puntos}`;
                     csvContent += row + "\r\n";
                 });
 
-                // Descarga automática
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
@@ -405,14 +390,12 @@
                 link.click();
                 document.body.removeChild(link);
 
-                // Restauramos el botón
                 btn.disabled = false;
                 spinner.style.display = 'none';
                 btn.innerHTML = `⬇️ Descargar Excel Completo <div class="spinner"></div>`;
 
             } catch(e) {
                 alert("Hubo un error al exportar la base de datos completa.");
-                // Restauramos el botón
                 btn.disabled = false;
                 spinner.style.display = 'none';
                 btn.innerHTML = `⬇️ Descargar Excel Completo <div class="spinner"></div>`;

@@ -262,12 +262,12 @@
             }
         }
 
-               // --- CÁMARA TRASERA (environment) ---
+   // --- CÁMARA TRASERA (environment) ---
         function iniciarCamara() {
             if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
             html5QrCode.start(
                 { facingMode: "environment" }, 
-                { fps: 10, qrbox: { width: 180, height: 180 } }, // Cuadradito de escaneo más chico
+                { fps: 10, qrbox: { width: 180, height: 180 } },
                 onScanSuccess,
                 () => { }
             ).catch((err) => {
@@ -275,11 +275,6 @@
                 document.getElementById('reader').innerHTML = '<p style="color:#E74C3C; padding:30px; font-size:12px;">No se pudo activar la cámara.</p>';
             });
         }
-
-                document.getElementById('reader').innerHTML = '<p style="color:#E74C3C; padding:30px; font-size:12px;">No se pudo activar la cámara.</p>';
-            });
-        }
-
         function pausarCamara() {
             if (html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().catch(err => console.log(err));

@@ -1,4 +1,5 @@
 {
+  "id": "app-caja",
   "name": "Caja - Club Café",
   "short_name": "Caja Café",
   "start_url": "./barista.html",

@@ -108,6 +108,23 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #mensajeLoader { text-align: center; margin-top: 50px; font-weight: 600; color: var(--brand-marine); }
+
+        /* DISEÑO CARRUSEL DE MESES */
+        .month-slider {
+            display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; margin-top: 10px;
+            scrollbar-width: none; /* Oculta la barra en Firefox */
+        }
+        .month-slider::-webkit-scrollbar { display: none; } /* Oculta la barra en Chrome/Safari */
+        
+        .month-pill {
+            background: var(--card-white); border: 1.5px solid var(--border-warm); color: var(--text-secondary);
+            padding: 8px 16px; border-radius: 20px; font-family: 'Poppins', sans-serif; font-size: 13px; 
+            font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s;
+        }
+        .month-pill.active {
+            background: var(--brand-marine); border-color: var(--brand-marine); color: white;
+        }
+
     </style>
 </head>
 <body>
@@ -132,14 +149,27 @@
                     <div class="spinner"></div>
                 </button>
             </div>
-
-                             <div style="display: flex; gap: 10px; margin-top: 15px; margin-bottom: 20px; align-items: center; background: var(--card-white); padding: 15px; border-radius: 16px; border: 1px solid var(--border-warm); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
-                <label style="font-size: 13px; font-weight: 700; color: var(--brand-marine); margin: 0;">📅 Mes:</label>
-                
-                <input type="month" id="inputMes" style="flex: 1; padding: 10px 15px; border-radius: 12px; border: 1.5px solid var(--border-warm); font-family: 'Poppins', sans-serif; color: var(--text-main); font-weight: 600; background-color: #fcfcfc; outline: none; font-size: 14px;">
-                
-                <button class="btn-outlined" onclick="aplicarFiltro('todos')" style="background-color: rgba(26, 77, 124, 0.05); border: 1.5px solid var(--brand-marine); color: var(--brand-marine); padding: 10px 15px; font-size: 13px; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">Ver Histórico</button>
+           
+<div style="margin-top: 20px; margin-bottom: 25px;">
+                <label style="font-size: 14px; font-weight: 700; color: var(--brand-marine); margin: 0;">📅 Filtrar (Año 2026):</label>
+                <div class="month-slider" id="contenedorMeses">
+                    <button class="month-pill active" onclick="seleccionarMes('todos', this)">Histórico Completo</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-01', this)">Enero</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-02', this)">Febrero</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-03', this)">Marzo</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-04', this)">Abril</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-05', this)">Mayo</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-06', this)">Junio</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-07', this)">Julio</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-08', this)">Agosto</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-09', this)">Septiembre</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-10', this)">Octubre</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-11', this)">Noviembre</button>
+                    <button class="month-pill" onclick="seleccionarMes('2026-12', this)">Diciembre</button>
+                </div>
             </div>
+
+                             
 
             <div id="mensajeLoader">Sincronizando base de datos...</div>
 
@@ -271,19 +301,24 @@
                 document.getElementById('mensajeLoader').innerText = "Hubo un error al sincronizar.";
             }
         }
-               // --- LÓGICA DE FILTRADO Y MATEMÁTICAS ---
-        document.getElementById('inputMes').addEventListener('change', function(e) {
-            aplicarFiltro(e.target.value); // Formato que manda el calendario: "YYYY-MM"
-        });
+     
+
+        // --- LÓGICA DE FILTRADO Y MATEMÁTICAS ---
+        
+        // Nueva función para el carrusel de burbujas
+        window.seleccionarMes = function(mesFiltro, btn) {
+            // Le sacamos el color activo a todos los botones
+            document.querySelectorAll('.month-pill').forEach(b => b.classList.remove('active'));
+            // Se lo ponemos solo al que tocaste
+            btn.classList.add('active');
+            
+            aplicarFiltro(mesFiltro);
+        }
 
         window.aplicarFiltro = function(mesFiltro) {
-            if (mesFiltro === 'todos') {
-                document.getElementById('inputMes').value = ''; // Limpiamos la cajita
-            }
-
             let clientesFiltrados = todosLosClientes;
 
-            // Filtramos exacto por Año-Mes (ej: "2026-03")
+            // Filtramos exacto por Año-Mes ("2026-03")
             if (mesFiltro && mesFiltro !== 'todos') {
                 clientesFiltrados = todosLosClientes.filter(c => c.fecha && c.fecha.startsWith(mesFiltro));
             }
@@ -295,7 +330,6 @@
 
             clientesFiltrados.forEach(c => {
                 totalCafesCanjeados += c.premios;
-                // Los sellos históricos son los flotantes + (premios * 10)
                 totalSellosHistoricos += c.puntos + (c.premios * 10);
             });
 
@@ -318,6 +352,11 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            actualizarGrafico(totalClientes, totalSellosHistoricos, totalCafesCanjeados);
+        }
+
+
 
             actualizarGrafico(totalClientes, totalSellosHistoricos, totalCafesCanjeados);
         }

@@ -133,10 +133,23 @@
                 </button>
             </div>
 
-            <div class="filter-section">
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Filtrar mes:</label>
-                <input type="month" id="inputMes" class="input-mes">
-                <button class="btn-outlined" onclick="aplicarFiltro('todos')">Ver Histórico</button>
+                  <div style="display: flex; gap: 15px; margin-top: 15px; margin-bottom: 20px; align-items: center; background: var(--card-white); padding: 15px 20px; border-radius: 18px; border: 1px solid var(--border-warm); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <label style="font-size: 14px; font-weight: 700; color: var(--brand-marine); margin: 0;">📅 Mes:</label>
+                <select id="inputMes" style="flex: 1; padding: 12px 15px; border-radius: 12px; border: 1.5px solid var(--border-warm); font-family: 'Poppins', sans-serif; color: var(--text-main); font-weight: 600; background-color: #fcfcfc; cursor: pointer; outline: none; font-size: 14px;">
+                    <option value="todos">Todos (Histórico completo)</option>
+                    <option value="-01-">Enero</option>
+                    <option value="-02-">Febrero</option>
+                    <option value="-03-">Marzo</option>
+                    <option value="-04-">Abril</option>
+                    <option value="-05-">Mayo</option>
+                    <option value="-06-">Junio</option>
+                    <option value="-07-">Julio</option>
+                    <option value="-08-">Agosto</option>
+                    <option value="-09-">Septiembre</option>
+                    <option value="-10-">Octubre</option>
+                    <option value="-11-">Noviembre</option>
+                    <option value="-12-">Diciembre</option>
+                </select>
             </div>
 
             <div id="mensajeLoader">Sincronizando base de datos...</div>
@@ -269,22 +282,18 @@
                 document.getElementById('mensajeLoader').innerText = "Hubo un error al sincronizar.";
             }
         }
-
         // --- LÓGICA DE FILTRADO Y MATEMÁTICAS ---
         document.getElementById('inputMes').addEventListener('change', function(e) {
-            aplicarFiltro(e.target.value); // Formato que llega: "YYYY-MM"
+            aplicarFiltro(e.target.value); // Formato que llega ahora: "-03-", "-04-", etc.
         });
 
         window.aplicarFiltro = function(mesFiltro) {
-            if (mesFiltro === 'todos') {
-                document.getElementById('inputMes').value = ''; // Reseteamos el calendario visual
-            }
-
             let clientesFiltrados = todosLosClientes;
 
             // Filtramos si eligió un mes específico
             if (mesFiltro && mesFiltro !== 'todos') {
-                clientesFiltrados = todosLosClientes.filter(c => c.fecha.startsWith(mesFiltro));
+                // Buscamos que la fecha contenga exactamente el mes (ej: "-03-")
+                clientesFiltrados = todosLosClientes.filter(c => c.fecha && c.fecha.includes(mesFiltro));
             }
 
             // Calculamos métricas históricas
@@ -294,7 +303,7 @@
 
             clientesFiltrados.forEach(c => {
                 totalCafesCanjeados += c.premios;
-                // Los sellos históricos son los que tiene flotando (puntos) + 10 por cada vez que se llevó un premio
+                // Los sellos históricos son los que tiene flotando (puntos) + 10 por cada premio
                 totalSellosHistoricos += c.puntos + (c.premios * 10);
             });
 
@@ -303,7 +312,7 @@
             document.getElementById('uiTotalSellosHist').innerText = totalSellosHistoricos;
             document.getElementById('uiCafesCanjeados').innerText = totalCafesCanjeados;
 
-            // Dibujamos la Tabla (Solo los primeros 15 para cuidar la pantalla)
+            // Dibujamos la Tabla (Solo los primeros 15)
             const tbody = document.getElementById('tablaClientes');
             tbody.innerHTML = '';
             
@@ -320,6 +329,7 @@
 
             actualizarGrafico(totalClientes, totalSellosHistoricos, totalCafesCanjeados);
         }
+
 
         function actualizarGrafico(clientes, sellos, canjeados) {
             const ctx = document.getElementById('graficoEstadisticas').getContext('2d');

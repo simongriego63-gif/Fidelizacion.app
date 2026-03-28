@@ -232,16 +232,14 @@
             uiRegistro.style.display = 'none';
             uiCargando.style.display = 'block';
             uiCargando.innerText = "Sincronizando tarjeta...";
-
-
-            try {
+try {
                 const docRef = doc(db, "clientes", celular);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     await setDoc(docRef, { nombre: nombre }, { merge: true });
                 } else {
-                    // EL SISTEMA TOMA LA FECHA SOLITOS ACÁ:
+                    // EL SISTEMA TOMA LA FECHA SOLITO ACÁ:
                     const fechaAutomatica = new Date().toISOString();
                     
                     await setDoc(docRef, { 
@@ -253,20 +251,13 @@
                 
                 localStorage.setItem('miTarjetaCafeTEL', celular);
                 abrirTarjeta(celular);
-            }
-            
-            
-            
-            
-            
-            
-            console.error("Error:", e);
+            } catch (e) {
+                console.error("Error:", e);
                 alert("Hubo un error de conexión.");
                 uiCargando.style.display = 'none';
                 uiRegistro.style.display = 'block';
             }
         }
-
         function abrirTarjeta(celular) {
             uiCargando.style.display = 'none';
             uiRegistro.style.display = 'none';

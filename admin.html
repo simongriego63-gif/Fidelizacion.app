@@ -356,13 +356,6 @@
             actualizarGrafico(totalClientes, totalSellosHistoricos, totalCafesCanjeados);
         }
 
-
-
-            actualizarGrafico(totalClientes, totalSellosHistoricos, totalCafesCanjeados);
-        }
-
-
-
         function actualizarGrafico(clientes, sellos, canjeados) {
             const ctx = document.getElementById('graficoEstadisticas').getContext('2d');
             if(grafico) grafico.destroy(); // Borramos el anterior si existe

@@ -157,7 +157,7 @@
                 <div class="logo">TU CAFÉ™</div>
                 <div class="user-info">
                     <div class="user-nickname" id="displayNombre">...</div>
-                    <span class="user-tel-label" id="displayTelLabel">****0000</span>
+                    <span class="user-tel-label" id="displayTelLabel">******0000</span>
                 </div>
             </div>
             
@@ -264,11 +264,11 @@ try {
             uiTarjeta.style.display = 'block';
 
             // QR visual con el número de teléfono
-            document.getElementById('qrImage').src = https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${celular};
+            document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${celular}`;
             
-            // Ofuscar teléfono ****1234
+            // Ofuscar teléfono ******1234
             let ultimos4 = celular.slice(-4);
-            document.getElementById('displayTelLabel').innerText = ******${ultimos4};
+            document.getElementById('displayTelLabel').innerText = `******${ultimos4}`;
 
             // ESCUCHAR EN TIEMPO REAL
             onSnapshot(doc(db, "clientes", celular), (docSnap) => {

@@ -16,21 +16,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Paleta Cálida y Azul Marino Pacífico (Misma inspo Barista) */
-            --bg-warm: #FAF5F0; /* Crema suave de fondo */
+            /* Paleta Cálida y Azul Marino Pacífico */
+            --bg-warm: #FAF5F0; 
             --card-white: #ffffff;
-            --brand-marine: #1A4D7C; /* Azul marino pacífico */
+            --brand-marine: #1A4D7C; 
             --brand-marine-gradient: linear-gradient(135deg, #1A4D7C 0%, #0D3153 100%);
             --text-main: #2C3E50;
             --text-on-blue: #ffffff;
             --text-secondary: #7F8C8D;
             --border-warm: #E0D7D0;
             
-            /* Colores para las tazas */
-            --cup-empty-border: rgba(255,255,255,0.2); /* Borde sutil taza vacía */
-            --cup-filled-coffee: #3E2723; /* Color café oscuro */
-            --cup-filled-steam: #D5D8DC; /* Humo plateado */
-            --cup-marked-bg: #ffffff; /* Fondo taza marcada */
+            /* Colores para los Cangrejos Aesthetic */
+            --crab-empty-border: rgba(255,255,255,0.2); /* Borde sutil cangrejo vacío */
+            --crab-marked-bg: #ffffff; /* Fondo del cangrejo cuando está lleno */
+            --crab-filled-coral: #FF8A80; /* Color coral moderno para el relleno */
         }
 
         body {
@@ -86,30 +85,28 @@
         .user-nickname { font-size: 15px; font-weight: 600; }
         .user-tel-label { display: block; font-size: 10px; opacity: 0.7; text-transform: uppercase; font-family: monospace;}
 
-        /* Contenedor Tazas con efecto Glassmorphism */
+        /* Contenedor con efecto Glassmorphism */
         .stamps-container {
-            background: rgba(255, 255, 255, 0.08); /* Fondo vidrio sutil */
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); /* Desenfoque */
+            background: rgba(255, 255, 255, 0.08); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
             padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
             margin-bottom: 20px;
         }
         
-        /* Grilla de Tazas */
+        /* Grilla de Cangrejos minimalistas (aesthetic) */
         .stamps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 15px; justify-items: center;}
         
-        /* DISEÑO DE LA TAZA (SVG) */
-        .stamp-cup { width: 45px; height: 45px; transition: all 0.3s ease; }
+        /* DISEÑO DEL CANGREJO (SVG) */
+        .stamp-cangrejo { width: 45px; height: 45px; transition: all 0.3s ease; }
         
-        /* Estilo Taza VACÍA (Borde sutil) */
-        .stamp-cup .cup-path { fill: none; stroke: var(--cup-empty-border); stroke-width: 1.5; transition: all 0.3s; }
-        .stamp-cup .steam-path { fill: none; stroke: none; transition: all 0.3s; } /* Sin humo */
-        .stamp-cup .coffee-fill { fill: none; transition: all 0.3s; } /* Sin café */
+        /* Estilo Cangrejo VACÍO (Solo borde minimalista) */
+        .stamp-cangrejo .crab-path { fill: none; stroke: var(--crab-empty-border); stroke-width: 1.5; transition: all 0.3s; }
+        .stamp-cangrejo .crab-fill { fill: none; transition: all 0.3s; } 
 
-        /* Estilo Taza LLENA/MARCADA */
-        .stamp-cup.filled { transform: scale(1.05); }
-        .stamp-cup.filled .cup-path { fill: var(--cup-marked-bg); stroke: var(--cup-marked-bg); } /* Taza blanca fondo */
-        .stamp-cup.filled .coffee-fill { fill: var(--cup-filled-coffee); } /* Café marrón */
-        .stamp-cup.filled .steam-path { fill: none; stroke: var(--cup-filled-steam); stroke-width: 1.5; stroke-linecap: round; } /* Humo plateado */
+        /* Estilo Cangrejo LLENO/MARCADA */
+        .stamp-cangrejo.filled { transform: scale(1.05); }
+        .stamp-cangrejo.filled .crab-path { fill: var(--crab-marked-bg); stroke: var(--crab-marked-bg); } 
+        .stamp-cangrejo.filled .crab-fill { fill: var(--crab-filled-coral); }
 
         .stamps-text { text-align: center; font-size: 11px; opacity: 0.8; margin: 0; font-weight: 400;}
 
@@ -118,7 +115,7 @@
         .info-group.right { text-align: right; }
         .info-label { font-size: 10px; opacity: 0.7; text-transform: uppercase; margin-bottom: 2px; font-weight: 600;}
         .info-value { font-weight: 700; font-size: 16px; }
-        .info-value-points { color: #FFD700; /* Oro para puntos */ font-size: 20px;}
+        .info-value-points { color: #FFD700; font-size: 20px;}
 
         .qr-section { display: flex; flex-direction: column; align-items: center; gap: 10px;}
         .qr-box { background-color: var(--card-white); padding: 12px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
@@ -140,7 +137,7 @@
         
         <div class="input-group">
             <label>Tu Apodo / Nombre</label>
-            <input type="text" id="inputNombre" class="input-box" placeholder="Ej: Simon " required>
+            <input type="text" id="inputNombre" class="input-box" placeholder="Ej: Simon" required>
         </div>
         
         <div class="input-group">
@@ -163,7 +160,7 @@
             
             <div class="stamps-container">
                 <div class="stamps-grid" id="gridSellos"></div>
-                <p class="stamps-text">Completa 10 tazas y recibe una bebida de regalo.</p>
+                <p class="stamps-text">Completa 10 sellos y recibe una bebida de regalo.</p>
             </div>
             
             <div class="info-row">
@@ -172,7 +169,7 @@
                     <div class="info-value" id="displayPremio">...</div>
                 </div>
                 <div class="info-group right">
-                    <div class="info-label">Tazas Servidas</div>
+                    <div class="info-label">Cangrejos</div>
                     <div class="info-value info-value-points"><span id="displayPuntos">0</span>/10</div>
                 </div>
             </div>
@@ -192,7 +189,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // TUS LLAVES CONFIGURADAS
         const firebaseConfig = {
             apiKey: "AIzaSyCaqJraAXeZ8F4zCd9GUIdNIHhfU7FMzJk",
             authDomain: "club-cafe-app.firebaseapp.com",
@@ -226,26 +222,26 @@
 
             if(!nombre || !celular) return alert("Por favor completa ambos datos");
 
-            celular = celular.replace(/\D/g,''); // Solo números
+            celular = celular.replace(/\D/g,''); 
             if(celular.length < 8) return alert("Ingresa un número de celular válido");
 
             uiRegistro.style.display = 'none';
             uiCargando.style.display = 'block';
             uiCargando.innerText = "Sincronizando tarjeta...";
-try {
+
+            try {
                 const docRef = doc(db, "clientes", celular);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     await setDoc(docRef, { nombre: nombre }, { merge: true });
                 } else {
-                    // EL SISTEMA TOMA LA FECHA SOLITO ACÁ:
                     const fechaAutomatica = new Date().toISOString();
                     
                     await setDoc(docRef, { 
                         nombre: nombre, 
                         puntos: 0,
-                        fechaRegistro: fechaAutomatica // Se guarda de fondo
+                        fechaRegistro: fechaAutomatica 
                     });
                 }
                 
@@ -258,41 +254,37 @@ try {
                 uiRegistro.style.display = 'block';
             }
         }
+
         function abrirTarjeta(celular) {
             uiCargando.style.display = 'none';
             uiRegistro.style.display = 'none';
             uiTarjeta.style.display = 'block';
 
-            // QR visual con el número de teléfono
             document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${celular}`;
             
-            // Ofuscar teléfono ******1234
             let ultimos4 = celular.slice(-4);
             document.getElementById('displayTelLabel').innerText = `******${ultimos4}`;
 
-            // ESCUCHAR EN TIEMPO REAL
             onSnapshot(doc(db, "clientes", celular), (docSnap) => {
                 if (docSnap.exists()) {
                     const datos = docSnap.data();
                     document.getElementById('displayNombre').innerText = datos.nombre;
-                    renderizarTazas(datos.puntos);
+                    renderizarCangrejos(datos.puntos);
                 } else {
                     cerrarSesion(); 
                 }
             });
         }
 
-                // --- FUNCIÓN MÁGICA: DIBUJAR LAS TAZAS (CORREGIDA) ---
-        function renderizarTazas(puntosActuales) {
-            const totalTazas = 10;
+        // --- FUNCIÓN DIBUJAR LOS CANGREJOS AESTHETIC ---
+        function renderizarCangrejos(puntosActuales) {
+            const totalSellos = 10;
             const grid = document.getElementById('gridSellos');
             grid.innerHTML = ''; 
 
-            for (let i = 1; i <= totalTazas; i++) {
+            for (let i = 1; i <= totalSellos; i++) {
                 const contenedorSvg = document.createElement('div');
-                contenedorSvg.innerHTML = obtenerSvgTaza();
-                
-                // EL ARREGLO: Buscamos específicamente la etiqueta 'svg', ignorando espacios rotos
+                contenedorSvg.innerHTML = obtenerSvgCangrejo();
                 const svgElement = contenedorSvg.querySelector('svg'); 
                 
                 if (i <= puntosActuales) {
@@ -302,33 +294,31 @@ try {
                 grid.appendChild(svgElement);
             }
 
-            // Actualizar textos informativos
             document.getElementById('displayPuntos').innerText = puntosActuales;
             
             const uiPremio = document.getElementById('displayPremio');
-            if(puntosActuales >= totalTazas) {
-                uiPremio.innerText = "🎁 ¡BEBIDA LISTA!";
-                uiPremio.style.color = "#FFD700"; // Oro
+            if(puntosActuales >= totalSellos) {
+                uiPremio.innerText = "🎁 ¡CANGREJO LISTO!";
+                uiPremio.style.color = "#FFD700"; 
                 uiPremio.style.fontWeight = "700";
             } else {
-                uiPremio.innerText = "Aún sin premios";
+                uiPremio.innerText = "Juntando cangrejos...";
                 uiPremio.style.color = "var(--text-on-blue)";
                 uiPremio.style.fontWeight = "400";
             }
         }
 
-
-        // Esta función devuelve el código SVG puro de una taza de café minimalista
-        function obtenerSvgTaza() {
+        function obtenerSvgCangrejo() {
             return `
-            <svg class="stamp-cup" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path class="steam-path" d="M35,15 Q40,5 45,15 T55,15 M55,20 Q60,10 65,20 T75,20" />
-                
-                <path class="cup-path" d="M20,35 H80 V75 Q80,90 65,90 H35 Q20,90 20,75 Z" />
-                
-                <path class="coffee-fill" d="M22,37 H78 V73 Q78,88 63,88 H37 Q22,88 22,73 Z" />
-                
-                <path class="cup-path" d="M80,45 Q95,45 95,60 T80,75" />
+            <svg class="stamp-cangrejo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path class="crab-path" d="M30,35 Q50,25 70,35 T70,75 Q50,85 30,75 Z" />
+                <circle class="crab-path" cx="40" cy="28" r="3"/>
+                <circle class="crab-path" cx="60" cy="28" r="3"/>
+                <path class="crab-path" d="M15,40 Q25,30 35,40 M15,55 H30 M15,70 Q25,80 35,70" /> 
+                <path class="crab-path" d="M85,40 Q75,30 65,40 M85,55 H70 M85,70 Q75,80 65,70" /> 
+                <path class="crab-path" d="M30,20 L20,10 Q10,20 20,30 L30,20 Z" /> 
+                <path class="crab-path" d="M70,20 L80,10 Q90,20 80,30 L70,20 Z" /> 
+                <path class="crab-fill" d="M32,37 Q50,27 68,37 T68,73 Q50,83 32,73 Z" />
             </svg>
             `;
         }
@@ -340,5 +330,3 @@ try {
     </script>
 </body>
 </html>
-
-
